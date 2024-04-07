@@ -33,5 +33,5 @@ This will generate sequences for 10 seed values between 4 and 1000 and display t
 
 ## License
 
-This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
+This project is licensed under the MIT License - see the [LICENSE](https://github.com/Fudmottin/Collatz/blob/main/LICENSE) file for details.
 
