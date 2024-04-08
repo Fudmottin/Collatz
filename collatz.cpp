@@ -1,7 +1,6 @@
 #include <iostream>
 #include <vector>
 #include <future>
-#include <thread>
 #include <algorithm>
 #include <random>
 #include <mutex>
@@ -58,12 +57,11 @@ int main (int argc, char *argv[]) {
         return -1;
     }
 
-    unsigned int num_cores = std::thread::hardware_concurrency();
     std::vector<std::future<void>> futures;
     std::mutex cout_mutex;
 
     for (int i = 0; i < seeds; ++i) {
-        futures.push_back(std::async(std::launch::async, [i, max_seed, &cout_mutex]() {
+        futures.push_back(std::async(std::launch::async, [&]() {
             boost::random::mt19937_64 rng(std::random_device {}());                         
             boost::multiprecision::cpp_int seed = 
                 boost::random::uniform_int_distribution<cpp_int>
@@ -74,9 +72,8 @@ int main (int argc, char *argv[]) {
             {
                 std::lock_guard<std::mutex> lock(cout_mutex);
                 std::cout << "collatz(" << seed << ")\n";
-                for (auto n : seq) {
+                for (auto n : seq)
                     std::cout << n << "\n";
-                }
                 std::cout << std::endl;
             }
 
