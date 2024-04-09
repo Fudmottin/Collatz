@@ -1,5 +1,6 @@
 #include <iostream>
 #include <vector>
+#include <set>
 #include <future>
 #include <algorithm>
 #include <random>
@@ -26,6 +27,17 @@ std::vector<cpp_int> runCollatz(cpp_int seed) {
     std::reverse(seq.begin(), seq.end());
 
     return seq;
+}
+
+cpp_int findNode(const std::vector<cpp_int>& vec1, const std::vector<cpp_int>& vec2) {
+    auto it = std::mismatch(vec1.begin(), vec1.end(), vec2.begin(), vec2.end());
+    if (it.first == vec1.end() || it.second == vec2.end()) {
+        // One vector is a prefix of the other, return the last element of the shorter vector
+        return vec1.size() < vec2.size() ? vec1.back() : vec2.back();
+    } else {
+        // Return the last common element
+        return *(it.first - 1);
+    }
 }
 
 int main (int argc, char *argv[]) {
@@ -58,23 +70,38 @@ int main (int argc, char *argv[]) {
     }
 
     std::vector<std::future<void>> futures;
-    std::mutex cout_mutex;
+    std::mutex cout_mutex, nodes_mutex;
+    std::vector<cpp_int> prev_seq {};
+    std::set<cpp_int> nodes {};
 
     for (int i = 0; i < seeds; ++i) {
         futures.push_back(std::async(std::launch::async, [&]() {
             boost::random::mt19937_64 rng(std::random_device {}());                         
             boost::multiprecision::cpp_int seed = 
                 boost::random::uniform_int_distribution<cpp_int>
-                (4, max_seed)(rng);
+                (4, max_seed - 3)(rng);
+
+            seed += 3 - seed % 3;        // This forces the seed to be a leaf node
+            while ((seed & 1) == 0)      // by making it evenly divisible by 3 but
+                seed >>= 1;              // not by 2. No 3n+1 number will be evenly
+                                         // divisible by 3.
 
             auto seq = runCollatz(seed);
 
             {
                 std::lock_guard<std::mutex> lock(cout_mutex);
-                std::cout << "collatz(" << seed << ")\n";
+                std::cout << "collatz:\n";
                 for (auto n : seq)
                     std::cout << n << "\n";
                 std::cout << std::endl;
+            }
+            {
+                std::lock_guard<std::mutex> lock(nodes_mutex);
+                if (!prev_seq.empty()) {
+                    auto node = findNode(prev_seq, seq);
+                    nodes.insert(node);
+                }
+                prev_seq = seq;
             }
 
         }));
@@ -82,6 +109,12 @@ int main (int argc, char *argv[]) {
 
     for (auto& future : futures)
         future.get();
+
+    std::cout << "nodes:\n";
+    for (auto n : nodes)
+        std::cout << n << "\n";
+    std::cout << std::endl;
+
 
     return 0;
 }
