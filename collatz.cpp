@@ -1,10 +1,8 @@
 #include <iostream>
 #include <vector>
 #include <set>
-#include <future>
 #include <algorithm>
 #include <random>
-#include <mutex>
 #include <boost/multiprecision/cpp_int.hpp>
 #include <boost/random/mersenne_twister.hpp>
 #include <boost/random/uniform_int_distribution.hpp>
@@ -18,11 +16,14 @@ inline cpp_int collatz(const cpp_int& n) {
         return n * 3 + 1;
 }
 
-std::vector<cpp_int> runCollatz(cpp_int seed) {
+std::vector<cpp_int> runCollatz(const cpp_int& seed) {
     std::vector<cpp_int> seq;
 
-    for (auto n = seed; n > 3; n = collatz(n))
-         seq.push_back(n);
+    auto n = seed;
+    do {
+        seq.push_back(n);
+        n = collatz(n);
+    } while (n > 3);
 
     std::reverse(seq.begin(), seq.end());
 
@@ -64,57 +65,53 @@ int main (int argc, char *argv[]) {
         std::cerr << "Seeds must be a non-negative integer." << std::endl;
         return -1;
     }
-    if (max_seed <= 4) {
+    if (max_seed < 4) {
         std::cerr << "Second argument must be greater than 4." << std::endl;
         return -1;
     }
 
-    std::vector<std::future<void>> futures;
-    std::mutex cout_mutex, nodes_mutex;
-    std::vector<cpp_int> prev_seq {};
-    std::set<cpp_int> nodes {};
+    try {
+        std::vector<cpp_int> prev_seq {};
+        std::set<cpp_int> nodes {};
 
-    for (int i = 0; i < seeds; ++i) {
-        futures.push_back(std::async(std::launch::async, [&]() {
+        for (int i = 0; i < seeds; ++i) {
             boost::random::mt19937_64 rng(std::random_device {}());                         
             boost::multiprecision::cpp_int seed = 
-                boost::random::uniform_int_distribution<cpp_int>
-                (4, max_seed - 3)(rng);
+            boost::random::uniform_int_distribution<cpp_int>
+            (4, max_seed)(rng);
 
-            seed += 3 - seed % 3;        // This forces the seed to be a leaf node
-            while ((seed & 1) == 0)      // by making it evenly divisible by 3 but
-                seed >>= 1;              // not by 2. No 3n+1 number will be evenly
-                                         // divisible by 3.
+            // Load the dice. We will make the seed evenly divisible
+            // by 3 but not by 2. This should result in a sequence that
+            // only the seed is divisible by 3. 3n+1 can't be divisible
+            // by 3. We will leave any powers of 2 remain and see what
+            // happens. When the collatz function hits a power of 2, it
+            // should dive straight to 1.
+        
+            seed += 3 - seed % 3; // Yeah, that's all we have to do.
 
             auto seq = runCollatz(seed);
 
-            {
-                std::lock_guard<std::mutex> lock(cout_mutex);
-                std::cout << "collatz:\n";
-                for (auto n : seq)
-                    std::cout << n << "\n";
-                std::cout << std::endl;
-            }
-            {
-                std::lock_guard<std::mutex> lock(nodes_mutex);
-                if (!prev_seq.empty()) {
-                    auto node = findNode(prev_seq, seq);
-                    nodes.insert(node);
-                }
-                prev_seq = seq;
-            }
+            std::cout << "collatz:\n";
+            for (auto n : seq)
+                std::cout << n << "\n";
+            std::cout << std::endl;
 
-        }));
+            if (!prev_seq.empty()) {
+                auto node = findNode(prev_seq, seq);
+                nodes.insert(node);
+            }
+            prev_seq = seq;
+        }
+
+        std::cout << "nodes:\n";
+        for (auto n : nodes)
+            std::cout << n << "\n";
+    }
+    catch (const std::exception& e) {
+        std::cerr << "Exception thrown: " << e.what() << std::endl;
     }
 
-    for (auto& future : futures)
-        future.get();
-
-    std::cout << "nodes:\n";
-    for (auto n : nodes)
-        std::cout << n << "\n";
     std::cout << std::endl;
-
 
     return 0;
 }
