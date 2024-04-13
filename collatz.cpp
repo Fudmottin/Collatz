@@ -33,8 +33,8 @@ std::vector<cpp_int> runCollatz(const cpp_int& seed) {
 cpp_int findNode(const std::vector<cpp_int>& vec1, const std::vector<cpp_int>& vec2) {
     auto it = std::mismatch(vec1.begin(), vec1.end(), vec2.begin(), vec2.end());
     if (it.first == vec1.end() || it.second == vec2.end()) {
-        // One vector is a prefix of the other, return the last element of the shorter vector
-        return vec1.size() < vec2.size() ? vec1.back() : vec2.back();
+        // One vector is a prefix of the other, return 0 
+        return 0; 
     } else {
         // Return the last common element
         return *(it.first - 1);
@@ -92,13 +92,15 @@ int main (int argc, char *argv[]) {
             for (auto n : seq)
                 if ((n & 1) == 0) ++evens; else ++odds;
 
-            std::cout << "collatz: " << evens << "/" << odds << "\n";
+            std::cout << "collatz: " << seed << " " << seq.size() << " " << evens << " " << odds << "\n";
             for (auto n : seq)
                 std::cout << n << "\n";
             std::cout << std::endl;
 
-            if (!prev_seq.empty())
-                nodes.insert(findNode(prev_seq, seq));
+            if (!prev_seq.empty()) {
+                auto node = findNode(prev_seq, seq);
+                if (node != 0) nodes.insert(node);
+            }
             prev_seq = seq;
         }
 
