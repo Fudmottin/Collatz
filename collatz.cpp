@@ -104,7 +104,7 @@ int main (int argc, char *argv[]) {
             prev_seq = seq;
         }
 
-        std::cout << "nodes:\n";
+        std::cout << "nodes: " << nodes.size() << "\n";
         for (auto n : nodes)
             std::cout << n << "\n";
     }
