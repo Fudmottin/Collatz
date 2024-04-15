@@ -1,13 +1,26 @@
 #include <iostream>
 #include <vector>
 #include <set>
+#include <tuple>
 #include <algorithm>
 #include <random>
+#include <utility>
 #include <boost/multiprecision/cpp_int.hpp>
 #include <boost/random/mersenne_twister.hpp>
 #include <boost/random/uniform_int_distribution.hpp>
 
 using boost::multiprecision::cpp_int;
+using NodeTuple = std::tuple<cpp_int, cpp_int, cpp_int>;
+using Nodes = std::set<cpp_int>;
+
+// Define a comparator for std::vector<cpp_int>
+struct VectorCompare {
+    bool operator()(const std::vector<cpp_int>& lhs, const std::vector<cpp_int>& rhs) const {
+        return std::lexicographical_compare(lhs.begin(), lhs.end(), rhs.begin(), rhs.end());
+    }
+};
+
+using CollatzSequences = std::set<std::vector<cpp_int>, VectorCompare>;
 
 inline cpp_int collatz(const cpp_int& n) {
     if ((n & 1) == 0)
@@ -41,6 +54,27 @@ cpp_int findNode(const std::vector<cpp_int>& vec1, const std::vector<cpp_int>& v
     }
 }
 
+void printCollatzSequence(const std::vector<cpp_int>& seq) {
+    long long odds = 0;
+    long long evens = 0;
+
+    if (seq.empty()) return;
+
+    for (auto n : seq)
+        if ((n & 1) == 0) ++evens; else ++odds;
+
+    std::cout << "collatz: " << seq.back() << " " << seq.size() << " " << evens << " " << odds << "\n";
+    for (auto n : seq)
+        std::cout << n << "\n";
+    std::cout << std::endl;
+}
+
+void printNodes(const Nodes& nodes) {
+    std::cout << "nodes: " << nodes.size() << "\n";
+    for (auto n : nodes)
+        std::cout << n << "\n";
+}
+
 int main (int argc, char *argv[]) {
     if (argc != 3) {
         std::cerr << "Usage: " << argv[0] << " <seeds max_seed>" << std::endl;
@@ -61,8 +95,8 @@ int main (int argc, char *argv[]) {
         return -1;
     }
 
-    if (seeds < 0) {
-        std::cerr << "Seeds must be a non-negative integer." << std::endl;
+    if (seeds < 1) {
+        std::cerr << "Seeds must be greater than zero." << std::endl;
         return -1;
     }
     if (max_seed < 4) {
@@ -71,8 +105,8 @@ int main (int argc, char *argv[]) {
     }
 
     try {
-        std::vector<cpp_int> prev_seq {};
-        std::set<cpp_int> nodes {};
+        Nodes nodes {};
+        CollatzSequences collatzSequences {};
 
         for (int i = 0; i < seeds; ++i) {
             boost::random::mt19937_64 rng(std::random_device {}());                         
@@ -86,27 +120,28 @@ int main (int argc, char *argv[]) {
             if (seed % 3 == 0) ++seed; // Yeah, that's all we have to do.
 
             auto seq = runCollatz(seed);
-            long long odds = 0;
-            long long evens = 0;
-
-            for (auto n : seq)
-                if ((n & 1) == 0) ++evens; else ++odds;
-
-            std::cout << "collatz: " << seed << " " << seq.size() << " " << evens << " " << odds << "\n";
-            for (auto n : seq)
-                std::cout << n << "\n";
-            std::cout << std::endl;
-
-            if (!prev_seq.empty()) {
-                auto node = findNode(prev_seq, seq);
-                if (node != 0) nodes.insert(node);
-            }
-            prev_seq = seq;
+            collatzSequences.insert(seq);
         }
 
-        std::cout << "nodes: " << nodes.size() << "\n";
-        for (auto n : nodes)
-            std::cout << n << "\n";
+        if (!collatzSequences.empty()) {
+            auto it1 = collatzSequences.begin();
+            while (it1 != std::prev(collatzSequences.end())) {
+                auto it2 = std::next(it1);
+                while (it2 != collatzSequences.end()) {
+                    auto node = findNode(*it1, *it2);
+                    if (node != 0) nodes.insert(node);
+                    ++it2;
+                }
+                ++it1;
+            }
+        }
+ 
+        printNodes(nodes);
+
+        if (!collatzSequences.empty())
+            for (const auto& seq : collatzSequences)
+                printCollatzSequence(seq);
+
     }
     catch (const std::exception& e) {
         std::cerr << "Exception thrown: " << e.what() << std::endl;
