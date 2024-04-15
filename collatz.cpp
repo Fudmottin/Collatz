@@ -54,6 +54,46 @@ cpp_int findNode(const std::vector<cpp_int>& vec1, const std::vector<cpp_int>& v
     }
 }
 
+CollatzSequences makeCollatzSequences(int seeds, const cpp_int& max_seed) {
+    CollatzSequences collatzSequences {};
+
+    for (int i = 0; i < seeds; ++i) {
+        boost::random::mt19937_64 rng(std::random_device {}());                         
+        boost::multiprecision::cpp_int seed = 
+        boost::random::uniform_int_distribution<cpp_int>
+        (4, max_seed)(rng);
+
+        // Load the dice. 3n+1 will always produce a number that is
+        // not divisible by 3. We will simply make sure that the seeed
+        // is also not divisible by 3.
+        if (seed % 3 == 0) ++seed; // Yeah, that's all we have to do.
+
+        auto seq = runCollatz(seed);
+        collatzSequences.insert(seq);
+    }
+
+    return collatzSequences;
+}
+
+Nodes makeNodes(const CollatzSequences& collatzSequences) {
+    Nodes nodes {};
+
+    if (!collatzSequences.empty()) {
+        auto it1 = collatzSequences.begin();
+        while (it1 != std::prev(collatzSequences.end())) {
+            auto it2 = std::next(it1);
+            while (it2 != collatzSequences.end()) {
+                auto node = findNode(*it1, *it2);
+                if (node != 0) nodes.insert(node);
+                ++it2;
+            }
+            ++it1;
+        }
+    }
+
+    return nodes; 
+}
+
 void printCollatzSequence(const std::vector<cpp_int>& seq) {
     long long odds = 0;
     long long evens = 0;
@@ -73,6 +113,13 @@ void printNodes(const Nodes& nodes) {
     std::cout << "nodes: " << nodes.size() << "\n";
     for (auto n : nodes)
         std::cout << n << "\n";
+    std::cout << std::endl;
+}
+
+void printSequences(const CollatzSequences& collatzSequences) {
+    if (!collatzSequences.empty())
+        for (const auto& seq : collatzSequences)
+            printCollatzSequence(seq);
 }
 
 int main (int argc, char *argv[]) {
@@ -105,43 +152,12 @@ int main (int argc, char *argv[]) {
     }
 
     try {
-        Nodes nodes {};
-        CollatzSequences collatzSequences {};
+        auto collatzSequences = makeCollatzSequences(seeds, max_seed);
+        auto nodes = makeNodes(collatzSequences);
 
-        for (int i = 0; i < seeds; ++i) {
-            boost::random::mt19937_64 rng(std::random_device {}());                         
-            boost::multiprecision::cpp_int seed = 
-            boost::random::uniform_int_distribution<cpp_int>
-            (4, max_seed)(rng);
-
-            // Load the dice. 3n+1 will always produce a number that is
-            // not divisible by 3. We will simply make sure that the seeed
-            // is also not divisible by 3.
-            if (seed % 3 == 0) ++seed; // Yeah, that's all we have to do.
-
-            auto seq = runCollatz(seed);
-            collatzSequences.insert(seq);
-        }
-
-        if (!collatzSequences.empty()) {
-            auto it1 = collatzSequences.begin();
-            while (it1 != std::prev(collatzSequences.end())) {
-                auto it2 = std::next(it1);
-                while (it2 != collatzSequences.end()) {
-                    auto node = findNode(*it1, *it2);
-                    if (node != 0) nodes.insert(node);
-                    ++it2;
-                }
-                ++it1;
-            }
-        }
- 
+        std::cout << "collatz sequence data v1\n\n";
         printNodes(nodes);
-
-        if (!collatzSequences.empty())
-            for (const auto& seq : collatzSequences)
-                printCollatzSequence(seq);
-
+        printSequences(collatzSequences);
     }
     catch (const std::exception& e) {
         std::cerr << "Exception thrown: " << e.what() << std::endl;
