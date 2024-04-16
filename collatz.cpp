@@ -56,9 +56,9 @@ cpp_int findNode(const std::vector<cpp_int>& vec1, const std::vector<cpp_int>& v
 
 CollatzSequences makeCollatzSequences(int seeds, const cpp_int& max_seed) {
     CollatzSequences collatzSequences {};
+    boost::random::mt19937_64 rng(std::random_device {}());                         
 
     for (int i = 0; i < seeds; ++i) {
-        boost::random::mt19937_64 rng(std::random_device {}());                         
         boost::multiprecision::cpp_int seed = 
         boost::random::uniform_int_distribution<cpp_int>
         (4, max_seed)(rng);
