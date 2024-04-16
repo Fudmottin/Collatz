@@ -1,7 +1,6 @@
 #include <iostream>
 #include <vector>
 #include <set>
-#include <tuple>
 #include <algorithm>
 #include <random>
 #include <utility>
@@ -10,8 +9,9 @@
 #include <boost/random/uniform_int_distribution.hpp>
 
 using boost::multiprecision::cpp_int;
-using NodeTuple = std::tuple<cpp_int, cpp_int, cpp_int>;
+using NodePair = std::pair<cpp_int, cpp_int>;
 using Nodes = std::set<cpp_int>;
+using NodePairs = std::set<NodePair>;
 
 // Define a comparator for std::vector<cpp_int>
 struct VectorCompare {
@@ -94,6 +94,22 @@ Nodes makeNodes(const CollatzSequences& collatzSequences) {
     return nodes; 
 }
 
+NodePairs makeNodePairs(const Nodes& nodes) {
+    NodePairs pairs {};
+    for (auto it = nodes.rbegin(); it != nodes.rend(); ++it) {
+        cpp_int parent = collatz(*it);
+        do {
+            auto ptr = nodes.find(parent);
+            if (ptr != nodes.end()) {
+                pairs.insert(NodePair(parent, *it));
+                break;
+            }
+            parent = collatz(parent);
+        } while (parent > 4);
+    }
+    return pairs;
+}
+
 void printCollatzSequence(const std::vector<cpp_int>& seq) {
     long long odds = 0;
     long long evens = 0;
@@ -110,9 +126,18 @@ void printCollatzSequence(const std::vector<cpp_int>& seq) {
 }
 
 void printNodes(const Nodes& nodes) {
+    if (nodes.empty()) return;
     std::cout << "nodes: " << nodes.size() << "\n";
     for (auto n : nodes)
         std::cout << n << "\n";
+    std::cout << std::endl;
+}
+
+void printHierarchy(const NodePairs& pairs) {
+    if (pairs.empty()) return;
+    std::cout << "hierarchy:\n";
+    for (auto p : pairs)
+        std::cout << p.first << " " << p.second << "\n";
     std::cout << std::endl;
 }
 
@@ -154,9 +179,11 @@ int main (int argc, char *argv[]) {
     try {
         auto collatzSequences = makeCollatzSequences(seeds, max_seed);
         auto nodes = makeNodes(collatzSequences);
+        auto hierarchy = makeNodePairs(nodes);
 
         std::cout << "collatz sequence data v1\n\n";
         printNodes(nodes);
+        printHierarchy(hierarchy);
         printSequences(collatzSequences);
     }
     catch (const std::exception& e) {
