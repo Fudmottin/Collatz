@@ -1,4 +1,5 @@
 #include <iostream>
+#include <fstream>
 #include <vector>
 #include <set>
 #include <algorithm>
@@ -141,6 +142,22 @@ void printHierarchy(const NodePairs& pairs) {
     std::cout << std::endl;
 }
 
+void createDOTFile(const NodePairs& pairs) {
+    // Print the tree in DOT format
+    std::ofstream dotFile("tree.dot");
+    if (dotFile.is_open()) {
+        dotFile << "digraph Tree {\n";
+        for (const auto& [parent, child] : pairs) {
+            dotFile << "  " << parent << " -> " << child << ";\n";
+        }
+        dotFile << "}\n";
+        dotFile.close();
+        std::cout << "DOT file generated successfully." << std::endl;
+    } else {
+        std::cerr << "Unable to open file for writing." << std::endl;
+    }
+}
+
 void printSequences(const CollatzSequences& collatzSequences) {
     if (!collatzSequences.empty())
         for (const auto& seq : collatzSequences)
@@ -185,6 +202,7 @@ int main (int argc, char *argv[]) {
         printNodes(nodes);
         printHierarchy(hierarchy);
         printSequences(collatzSequences);
+        createDOTFile(hierarchy);
     }
     catch (const std::exception& e) {
         std::cerr << "Exception thrown: " << e.what() << std::endl;
