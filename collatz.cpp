@@ -147,6 +147,7 @@ void createDOTFile(const NodePairs& pairs) {
     std::ofstream dotFile("tree.dot");
     if (dotFile.is_open()) {
         dotFile << "digraph Tree {\n";
+        dotFile << "ranksep=6.0;\n";  // Adjust this value as needed
         for (const auto& [parent, child] : pairs) {
             dotFile << "  " << parent << " -> " << child << ";\n";
         }
