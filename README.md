@@ -1,35 +1,105 @@
 # Collatz Conjecture Graph Generator
 
-This program generates sequences based on the Collatz conjecture for a given set of seed values. It then displays the sequences and identifies nodes in the Collatz graph where sequences intersect.
+This project is a C++ program that generates Collatz sequences from a set of random seeds. The Collatz conjecture asserts that for any positive integer, the sequence defined by the rule,
 
-## Usage
+    n -> n/2 if n is even
+    n -> 3n+1 if n is odd
 
-Compile the program using a C++ compiler that supports C++11 or later. For example:
+always reaches the number 1, regardless of the starting value of `n`.
 
-```sh
-g++ -std=c++11 -o collatz collatz.cpp
+## Description
+
+The program uses boost libraries to generate large integer values and also for generating random numbers. It takes two inputs: `seeds` which is the number of different starting points you want to use for your sequences, and `max_seed` which sets an upper limit on what these starting values can be.
+
+The program produces several outputs:
+
+- A list of all nodes (numbers) found in these generated sequences.
+- A hierarchy indicating how each node leads to other nodes in its corresponding sequence.
+- Individual Collatz sequences traced from each seed.
+- A DOT file, which can be used with Graphviz or similar tools to visualize the tree structure.
+
+## Requirements
+
+To compile and run this program you need:
+
+- A modern C++ compiler supporting C++14 standard.
+- Boost library installed.
+
+## Compilation And Execution
+
+Compile this project using a C++ compiler as follows:
+
+```
+g++ -std=c++14 -03 -o collatz collatz.cpp
 ```
 
-Run the compiled program with two command line arguments:
+Run it providing two command line arguments:
+1. Number of seeds (`seeds`)
+2. Maximum seed value (`max_seed`)
 
-```sh
-./collatz <seeds> <max_seed>
+Example:
+```
+./collatz 10 1000000 > data.txt
 ```
 
-- `<seeds>`: The number of seed values to use.
-- `<max_seed>`: The maximum value for the seed. Must be greater than 4.
+This will produce sequences from ten randomly chosen starting points between 4 and one million.
 
-## Dependencies
+## Output Sample
 
-- Boost C++ Libraries: The program uses Boost's multiprecision library for handling large integers and the random library for random number generation.
+The output includes information about each individual sequence, nodes in all sequences, and hierarchical relationships among nodes.
 
-## Example
+A sample output could look like this:
 
-```sh
-./collatz 10 1000
+```bash
+collatz sequence data v1
+
+nodes: 9
+16
+22
+40
+94
+130
+166
+328
+1552
+1606
+
+hierarchy:
+16 40
+16 1606
+22 130
+40 22
+40 94
+94 166
+94 328
+166 1552
+
+collatz: 191527 97 66 31
+4
+8
+16
+5
+10
+20
+40
+13
+26
+52
+17
+34
+11
+22
+7
+14
+
+...
+
+DOT file generated successfully.
 ```
 
-This will generate sequences for 10 seed values between 4 and 1000 and display the sequences along with the identified nodes in the Collatz graph.
+The `tree.dot` can be used with Graphviz or similar tools to visualize the tree structure.
+
+Enjoy exploring Collatz sequences!
 
 ## License
 
