@@ -30,7 +30,7 @@ To compile and run this program you need:
 Compile this project using a C++ compiler as follows:
 
 ```
-g++ -std=c++14 -03 -o collatz collatz.cpp
+c++ -std=c++14 -03 -o collatz collatz.cpp
 ```
 
 Run it providing two command line arguments:
@@ -98,6 +98,29 @@ DOT file generated successfully.
 ```
 
 The `tree.dot` can be used with Graphviz or similar tools to visualize the tree structure.
+
+## collatz2
+
+I added a simpler version of the program which displays the seed values along with the number
+of steps to get to 1 with tab delimeters. It compiles the same way as the main program and has the
+same requirements. When run, it looks something like this:
+
+```bash
+./collatz2 10 1000
+seed	steps
+273	29
+354	32
+396	27
+467	84
+473	35
+572	105
+623	131
+761	33
+783	121
+906	15
+
+Min steps: 15	Max steps: 131
+```
 
 Enjoy exploring Collatz sequences!
 
