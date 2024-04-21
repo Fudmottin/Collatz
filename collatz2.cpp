@@ -83,7 +83,7 @@ int main (int argc, char *argv[]) {
             maxVal = std::max(maxVal, ss.second);
         }
 
-        std::cout << "\nMin setps: " << minVal << "\tMax steps: " << maxVal << std::endl;
+        std::cout << "\nMin steps: " << minVal << "\tMax steps: " << maxVal << std::endl;
         std::cout << std::endl;
     }
     catch (const std::exception& e) {
