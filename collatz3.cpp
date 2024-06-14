@@ -25,7 +25,7 @@ int main () {
     std::vector<std::future<void>> futures;
     std::mutex io_mutex;
 
-    for(uint64_t seed = 0; seed < 1'000'000'000; ++seed)
+    for(uint64_t seed = 1; seed < 1'000'000'001; ++seed)
         futures.push_back(std::async(std::launch::async, [&, seed] {
             auto steps = collatz(seed);
             {
