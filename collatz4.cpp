@@ -28,7 +28,7 @@ int main () {
                 auto steps = collatz(seed);
                 {
                     std::lock_guard<std::mutex> lk(m);
-                    std::cout << "Seed: " << seed << " Steps: " << seed << "\r";
+                    std::cout << "Seed: " << seed << " Steps: " << steps << "\r";
                 }
             }
         }));
