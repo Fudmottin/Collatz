@@ -22,7 +22,7 @@ int main () {
     unsigned num_threads = std::thread::hardware_concurrency();
     std::vector<std::future<void>> futures;
 
-    std::cout << "Starting Collatz...\n";
+    std::cout << "Starting Collatz run...\n";
 
     for (int i = 0; i < num_threads; ++i)
         futures.push_back(std::async(std::launch::async, [&] {
