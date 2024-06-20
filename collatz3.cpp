@@ -16,10 +16,15 @@ inline uint64_t collatz(uint64_t seed) {
 }
 
 int main () {
-    for(uint64_t seed = 1; seed < 1'000'000'001; ++seed)
-        std::cout << "Seed: " << seed << " Steps: " << collatz(seed) << "\r";
+    std::cout << "Starting Collatz run...\n";
+
+    for(uint64_t seed = 0; seed <= 1'000'000'000; ++seed) {
+        auto steps = collatz(seed);
+        if ((seed % 100'000) == 0)
+            std::cout << "Seed: " << seed << " Steps: " << steps << "\r";
+    }
     
-    std::cout << std::endl;
+    std::cout << "\nFinished!" << std::endl;
 
     return 0;
 }

@@ -22,11 +22,13 @@ int main () {
     unsigned num_threads = std::thread::hardware_concurrency();
     std::vector<std::future<void>> futures;
 
+    std::cout << "Starting Collatz...\n";
+
     for (int i = 0; i < num_threads; ++i)
         futures.push_back(std::async(std::launch::async, [&] {
             for(uint64_t seed = 0; seed <= 1'000'000'000; seed += num_threads) {
                 auto steps = collatz(seed);
-                {
+                if ((seed % 100'000) == 0) {
                     std::lock_guard<std::mutex> lk(m);
                     std::cout << "Seed: " << seed << " Steps: " << steps << "\r";
                 }
@@ -36,7 +38,7 @@ int main () {
     for(auto& f : futures)
         f.wait();
 
-    std::cout << std::endl;
+    std::cout << "\nFinished!" << std::endl;
 
     return 0;
 }
