@@ -25,8 +25,8 @@ int main () {
     std::cout << "Starting Collatz run...\n";
 
     for (int i = 0; i < num_threads; ++i)
-        futures.push_back(std::async(std::launch::async, [&] {
-            for(uint64_t seed = 0; seed <= 1'000'000'000; seed += num_threads) {
+        futures.push_back(std::async(std::launch::async, [&, i] {
+            for(uint64_t seed = i; seed <= 1'000'000'000; seed += num_threads) {
                 auto steps = collatz(seed);
                 if ((seed % 100'000) == 0) {
                     std::lock_guard<std::mutex> lk(m);
